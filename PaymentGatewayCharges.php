@@ -7,7 +7,7 @@
  */
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . "core" . DIRECTORY_SEPARATOR . "Bootstrap.php";
-class payment_gateway_charges_license_3574PDOWrapper
+class payment_gateway_charges_license_4924PDOWrapper
 {
     private static $pdoConnection = NULL;
     private static function getDbConnection()
@@ -88,13 +88,13 @@ class payment_gateway_charges_license_3574PDOWrapper
         return $this::fetch_assoc($qRes);
     }
 }
-class payment_gateway_charges_license_3574
+class payment_gateway_charges_license_4924
 {
     /**
      * @var array
      */
     protected $servers = ["https://www.modulesgarden.com/client-area/", "https://licensing.modulesgarden.com", "https://zeus.licensing.modulesgarden.com", "https://ares.licensing.modulesgarden.com", "https://hades.licensing.modulesgarden.com"];
-    protected $db = "payment_gateway_charges_license_3574PDOWrapper";
+    protected $db = "payment_gateway_charges_license_4924PDOWrapper";
     protected $verifyPath = "modules/servers/licensing/verify.php";
     protected $moduleName = NULL;
     protected $secret = "";
@@ -111,7 +111,7 @@ class payment_gateway_charges_license_3574
     const STATUS_EXPIRED = "expired";
     const STATUS_NO_CONNECTION = "no_connection";
     const STATUS_WRONG_RESPONSE = "wrong_response";
-    const ERRORS = ["active" => "Your module license is active.", "invalid" => "Your module license is invalid.", "invalid_ip" => "Your module license is invalid.", "invalid_domain" => "Your module license is invalid.", "invalid_directory" => "Your module license is invalid.", "expired" => "Your module license has expired.", "no_connection" => "Connection not possible. Please report your server IP to contact@modulesgarden.com", "wrong_response" => "Connection not possible. Please report your server IP to contact@modulesgarden.com"];
+    const ERRORS = ["active" => "Your module license is active.", "invalid" => "Your module license is invalid.", "invalid_ip" => "Your module license is invalid.", "invalid_domain" => "Your module license is invalid.", "invalid_directory" => "Your module license is invalid.", "expired" => "Your module license has expired.", "no_connection" => "Connection not possible. Please report your server IP to support@modulesgarden.com", "wrong_response" => "Connection not possible. Please report your server IP to support@modulesgarden.com"];
     protected function __construct($moduleName)
     {
         $this->moduleName = $moduleName;
@@ -144,9 +144,12 @@ class payment_gateway_charges_license_3574
         if (!file_exists($file)) {
             throw new Exception("Unable to find " . $file . " file.");
         }
-        require $file;
         $keyName = $this->moduleName . "_licensekey";
-        return $this->validateKey(${$keyName});
+        $func = function ($file, $keyName) {
+            require $file;
+            return ${$keyName};
+        };
+        return $this->validateKey($func($file, $keyName));
     }
     protected function validateKey($licenseKey)
     {
@@ -344,14 +347,18 @@ class payment_gateway_charges_license_3574
             return $_SERVER["SERVER_NAME"];
         }
         global $CONFIG;
-        return parse_url($CONFIG["Domain"], PHP_URL_HOST);
+        return parse_url($CONFIG["SystemURL"], PHP_URL_HOST);
     }
     protected function getModuleVersion()
     {
         $moduleVersionFile = $this->dir . "/moduleVersion.php";
         $moduleVersion = "";
         if (file_exists($moduleVersionFile)) {
-            require $moduleVersionFile;
+            $func = function ($moduleVersionFile) {
+                require $moduleVersionFile;
+                return $moduleVersion;
+            };
+            $moduleVersion = $func($moduleVersionFile);
         }
         return $moduleVersion ? $moduleVersion : NULL;
     }
@@ -366,7 +373,7 @@ class payment_gateway_charges_license_3574
     }
     protected function getErrorMessage($message)
     {
-        return !empty(["active" => "Your module license is active.", "invalid" => "Your module license is invalid.", "invalid_ip" => "Your module license is invalid.", "invalid_domain" => "Your module license is invalid.", "invalid_directory" => "Your module license is invalid.", "expired" => "Your module license has expired.", "no_connection" => "Connection not possible. Please report your server IP to contact@modulesgarden.com", "wrong_response" => "Connection not possible. Please report your server IP to contact@modulesgarden.com"][$message]) ? ["active" => "Your module license is active.", "invalid" => "Your module license is invalid.", "invalid_ip" => "Your module license is invalid.", "invalid_domain" => "Your module license is invalid.", "invalid_directory" => "Your module license is invalid.", "expired" => "Your module license has expired.", "no_connection" => "Connection not possible. Please report your server IP to contact@modulesgarden.com", "wrong_response" => "Connection not possible. Please report your server IP to contact@modulesgarden.com"][$message] : $message;
+        return !empty(["active" => "Your module license is active.", "invalid" => "Your module license is invalid.", "invalid_ip" => "Your module license is invalid.", "invalid_domain" => "Your module license is invalid.", "invalid_directory" => "Your module license is invalid.", "expired" => "Your module license has expired.", "no_connection" => "Connection not possible. Please report your server IP to support@modulesgarden.com", "wrong_response" => "Connection not possible. Please report your server IP to support@modulesgarden.com"][$message]) ? ["active" => "Your module license is active.", "invalid" => "Your module license is invalid.", "invalid_ip" => "Your module license is invalid.", "invalid_domain" => "Your module license is invalid.", "invalid_directory" => "Your module license is invalid.", "expired" => "Your module license has expired.", "no_connection" => "Connection not possible. Please report your server IP to support@modulesgarden.com", "wrong_response" => "Connection not possible. Please report your server IP to support@modulesgarden.com"][$message] : $message;
     }
     protected function getIp()
     {
@@ -392,7 +399,7 @@ function PaymentGatewayCharges_upgrade($params)
 function PaymentGatewayCharges_output($params)
 {
     try {
-        $license_check = payment_gateway_charges_license_3574::validate();
+        $license_check = payment_gateway_charges_license_4924::validate();
         ModulesGarden\PaymentGatewayCharges\Core\ServiceLocator::call("controller")->setParams($params)->execute();
     } catch (Exception $ex) {
         echo "<strong>" . $ex->getMessage() . "</strong>";
